@@ -23,6 +23,57 @@
 
 ## 三 实现流程
 
-### 3-1 
+### 3-1 定义业务与基础指标
+
+定义 推广业务 promotion_cost_view.yaml
+
+```yaml
+select:
+  dimensions_list:
+    - content: idate
+      name: day_time
+      inner_format: toUInt32(idate)
+      inner_name: idate
+    - content: general_no
+      name: general_no
+    - content: pack_no
+      name: pack_no
+  index_list:
+    - content: sum(cost * {USD_RATE})
+      name: cost
+      data_type: number
+      definition: 消耗
+      is_money: true
+      agg: sum
+      desc: 消耗
+    - content: sum(impressions)
+      name: impressions
+      data_type: number
+      definition: 展示量
+      is_money: false
+      agg: sum
+      desc: 展示量
+    - content: sum(views)
+      name: views
+      data_type: number
+      definition: 访问量
+      is_money: false
+      agg: sum
+      desc: 访问量
+  from: > 
+    (
+      select
+        {SELECT_DIM}
+        sum(cost) as cost,
+        sum(impressions) as impressions,
+        sum(views) as views
+      from mg_dynamic_{APP_ID}.d_pack_promotion_record FINAL 
+      where 
+        toUInt32(idate) BETWEEN {LOCAL_START_DAY} AND {LOCAL_END_DAY}
+        {WHERE}
+      GROUP BY 
+        {GROUP_DIM}
+    )
+```
 
 
